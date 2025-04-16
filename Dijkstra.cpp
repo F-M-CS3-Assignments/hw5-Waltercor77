@@ -3,6 +3,11 @@
 #include <unordered_map>
 #include <climits>
 
+
+// Time Complexity of Dijkstra's Algorithm:
+// Initialization: O(V), where V is the number of vertices.
+
+
 int dijkstra(nodekey_t start, nodekey_t end, const Graph* g) {
     std::unordered_map<nodekey_t, int> distances;
 
