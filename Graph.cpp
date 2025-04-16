@@ -1,15 +1,8 @@
-
 #include "Graph.h"
 #include <iostream>
 #include <vector>
 
-
 using namespace std;
-
-
-
-
-
 
 // This method is not part of the Graph class / header on purpose
 const GraphEdge* findExistingEdge(nodekey_t gnFrom, nodekey_t gnTo, vector<vector<GraphEdge *>> adjList)
@@ -18,7 +11,6 @@ const GraphEdge* findExistingEdge(nodekey_t gnFrom, nodekey_t gnTo, vector<vecto
 	{
 		return nullptr;
 	}
-
 
 	for(size_t rowIDX = 0; rowIDX < adjList.size(); rowIDX++)
 	{
@@ -47,18 +39,12 @@ string GraphEdgeToString(const GraphEdge* e)
 	return "((" + to_string(e->from) + ")->(" + to_string(e->to) + ") w:" + to_string(e->weight) + ")";
 }
 
-
-
-
-
 void Graph::AddNode(nodekey_t key)
 {
-
 	if(this->IsPresent(key))
 	{
 		throw invalid_argument("Duplicate node cannot be added: " + to_string(key));
 	}
-
 
 	nodes.push_back(key);
 	vector <GraphEdge*> *newRow = new vector<GraphEdge*>;
@@ -66,12 +52,8 @@ void Graph::AddNode(nodekey_t key)
 	delete newRow; // ?
 }
 
-
-
-
 const GraphEdge *Graph::AddEdge(nodekey_t gnFrom, nodekey_t gnTo, unsigned int w)
 {
-
 	// The AddEdge method creates new edges.  It does not and should not update / change
 	// the weights of existing edges.  findExistingEdge does not check the weight for this reason
 	const GraphEdge* dup = findExistingEdge(gnFrom, gnTo, this->adjList);
@@ -94,20 +76,41 @@ const GraphEdge *Graph::AddEdge(nodekey_t gnFrom, nodekey_t gnTo, unsigned int w
 
 	// TODO:
 	// Do stuff here?  IDK what though
+	ge->from = gnFrom;
+	ge->to = gnTo;
+	ge->weight = w;
+
+	// find index for gnFrom
+	size_t rowIdx = 0;
+	while(rowIdx < nodes.size() && nodes.at(rowIdx) != gnFrom)
+	{
+		rowIdx++;
+	}
+
+	if(rowIdx == nodes.size())
+	{
+		throw logic_error("Internal error: gnFrom not found in nodes after presence check.");
+	}
+
+	adjList.at(rowIdx).push_back(ge);
 
 	const GraphEdge *response = ge; // this helps the compiler go
 	return response;
 }
 
-
 bool Graph::IsPresent(nodekey_t key) const
 {
 	// TODO:
 	// iterate through this->nodes and look for one that matches key
+	for(size_t i = 0; i < nodes.size(); i++)
+	{
+		if(nodes.at(i) == key)
+		{
+			return true;
+		}
+	}
+	return false;
 }
-
-
-
 
 set<const GraphEdge*> Graph::GetOutwardEdgesFrom(nodekey_t node) const 
 {
@@ -120,23 +123,33 @@ set<const GraphEdge*> Graph::GetOutwardEdgesFrom(nodekey_t node) const
 		throw invalid_argument("No such node: " + to_string(node));
 	}
 
-
-
 	set<const GraphEdge*> result = set<const GraphEdge*>();
 	// TODO:
 	// iterate over this->adjList.at(idx); and find nodes that match the given node
 	// in their "from" field, put those nodes in result
-
+	vector<GraphEdge*> row = adjList.at(idx);
+	for(size_t i = 0; i < row.size(); i++)
+	{
+		if(row.at(i)->from == node)
+		{
+			result.insert(row.at(i));
+		}
+	}
 
 	return result;
 }
 
- set<nodekey_t> Graph::GetNodes() const 
+set<nodekey_t> Graph::GetNodes() const 
 {
 	// TODOL
 	// iterate of this->nodes, accumulate into a set<nodekey_t> and return it
+	set<nodekey_t> result;
+	for(size_t i = 0; i < nodes.size(); i++)
+	{
+		result.insert(nodes.at(i));
+	}
+	return result;
 }
-
 
 size_t Graph::Order() const 
 {
@@ -155,8 +168,6 @@ size_t Graph::Size() const
 
 	return total;
 }
-
-
 
 string Graph::NodesToString() const 
 {
@@ -201,14 +212,20 @@ string Graph::EdgesToString() const
 
 	str = str +  "]";
 	return str;
-
 }
-
-
 
 Graph::~Graph() {
 	// TODO:
 	// Right now the memory leaks are bad, I need to
 	// implement something here to fix it
+	for(size_t i = 0; i < adjList.size(); i++)
+	{
+		vector<GraphEdge*> &row = adjList.at(i);
+		for(size_t j = 0; j < row.size(); j++)
+		{
+			delete row.at(j);
+		}
+		row.clear();
+	}
+	adjList.clear();
 }
-

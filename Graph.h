@@ -2,6 +2,7 @@
 #define GRAPH_H
 
 #include <iostream>
+#include <vector>
 #include <set>
 #include <climits>
 
@@ -57,8 +58,9 @@ class Graph{
 	
 	
 	private:
-		// TODO:
-		// put your code here!
+		vector<nodekey_t> nodes;
+		vector<vector<GraphEdge*>> adjList;
+
 	
 };
 
